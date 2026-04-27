@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Climatomètre R&T</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        /* 2. Indispensable : donner une hauteur à la carte */
+        #map { 
+            height: 400px; 
+            width: 100%; 
+            border-radius: 10px; 
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Carte de la Promotion</h1>
+        <a href="/ajouter" class="btn btn-primary shadow-sm">
+            <i class="bi bi-plus-lg"></i> + Ajouter un étudiant
+        </a>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="alert alert-info">Température Médiane : {{ mediane }}°C</div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialisation de la carte (centrée vers Montbéliard)
+        var map = L.map('map').setView([47.50, 6.80], 9);
+
+        // Appel des serveurs d'OpenStreetMap pour le fond de carte
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // On récupère les points envoyés par Python
+        var locations = {{ points | tojson }};
+
+        // On place les marqueurs sur la carte
+        locations.forEach(function(loc) {
+            L.marker([loc.lat, loc.lon])
+                .addTo(map)
+                .bindPopup(loc.popup);
+        });
+    </script>
+
+    </body>
+</html>

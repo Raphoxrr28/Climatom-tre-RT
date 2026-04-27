@@ -1,0 +1,29 @@
+[
+    {
+        "nom": "Heitz",
+        "prenom": "Raphael",
+        "residence_principale": {
+            "ville": "Hérimoncourt",
+            "debut": "2009-09-15",
+            "fin": null
+        }
+    },
+    {
+        "nom": "Lucas",
+        "prenom": "Maxime",
+        "residence_principale": {
+            "ville": "Champey",
+            "debut": "2018-03-10",
+            "fin": null
+        }
+    },
+    {
+        "nom": "Larribeau",
+        "prenom": "Dany",
+        "residence_principale": {
+            "ville": "Delle",
+            "debut": "2007-09-05",
+            "fin": null
+        }
+    }
+]
