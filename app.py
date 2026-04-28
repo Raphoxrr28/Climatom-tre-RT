@@ -1,4 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash
+from werkzeug.security import generate_password_hash, check_password_hash
+import os
 import sqlite3
 import statistics
 import threading
@@ -8,6 +10,7 @@ import update_weather
 app = Flask(__name__)
 DB_NAME = "climatometre.db"
 weather_thread_started = False
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-change-me')
 
 def get_db_connection():
     """Établit la connexion à la base SQLite."""
@@ -15,8 +18,12 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
-@app.route('/')
+@app.route('/map')
 def index():
+    # require login for map
+    if not session.get('user_id'):
+        return redirect(url_for('home'))
+
     conn = get_db_connection()
     
     # Requête complète : on récupère tout sans filtre WHERE restrictif
@@ -60,13 +67,16 @@ def index():
         student_info = f"{icone} {student_key} ({type_clean}) - {row['temp'] or '--'}°C"
 
         # Regroupement par ville pour la liste
-        city_label = row['ville'] or 'Adresse inconnue'
-        if city_label not in grouped_cities:
-            grouped_cities[city_label] = {
-                'ville': city_label,
+        raw_city = (row['ville'] or '').strip()
+        # key used for grouping (case-insensitive), display uses title-cased city name
+        city_key = raw_city.lower() if raw_city else 'adresse inconnue'
+        city_display = raw_city.title() if raw_city else 'Adresse inconnue'
+        if city_key not in grouped_cities:
+            grouped_cities[city_key] = {
+                'ville': city_display,
                 'students': {}
             }
-        grouped_cities[city_label]['students'][student_key] = {
+        grouped_cities[city_key]['students'][student_key] = {
             'info': student_info,
             'et_id': row['et_id'],
             'adresse': row['adresse'] or ''
@@ -79,8 +89,9 @@ def index():
                 key = (row['lat'], row['lon'], adresse_propre)
                 address_label = adresse_propre
             else:
-                key = (row['lat'], row['lon'], f"{city_label} - résidence {row['res_id']}")
-                address_label = f"{city_label} (adresse inconnue #{row['res_id']})"
+                # use normalized city display name when adresse is missing
+                key = (row['lat'], row['lon'], f"{city_display} - résidence {row['res_id']}")
+                address_label = f"{city_display} (adresse inconnue #{row['res_id']})"
 
             popup_student = f"{icone} {student_key} ({type_clean}) - {row['temp'] or '--'}°C"
             
@@ -92,12 +103,19 @@ def index():
                     'adresse': address_label,
                     'students': {}
                 }
-            grouped_addresses[key]['students'][student_key] = popup_student
+            # store popup text and etudiant id for later association with markers
+            grouped_addresses[key]['students'][student_key] = {
+                'popup': popup_student,
+                'et_id': row['et_id']
+            }
 
     # Créer les points_gps avec un marqueur par adresse
     for point in grouped_addresses.values():
-        student_list = sorted(point['students'].values())
-        student_names = sorted(point['students'].keys())
+        # build ordered lists of popup lines, names and ids
+        student_items = sorted(point['students'].items(), key=lambda kv: kv[0])
+        student_list = [v['popup'] for k, v in student_items]
+        student_names = [k for k, v in student_items]
+        student_ids = [v['et_id'] for k, v in student_items]
         popup_content = (
             f"<b>{point['adresse']}</b><br><small>{point['ville']}</small><br>"
             + "<br>".join(student_list)
@@ -109,6 +127,7 @@ def index():
             'city': point['ville'],
             'adresse': point['adresse'],
             'student_names': student_names,
+            'student_ids': student_ids,
             'search': ' '.join([str(point['ville'] or ''), str(point['adresse'] or '')] + student_names).lower()
         })
 
@@ -121,6 +140,75 @@ def index():
                            mediane=mediane, 
                            points=points_gps,
                            grouped_cities=list(grouped_cities.values()))
+
+
+@app.route('/')
+def home():
+    """Page d'accueil : affiche la page de connexion (login)."""
+    return render_template('login.html')
+
+
+def get_user_by_username(username):
+    conn = get_db_connection()
+    user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+    conn.close()
+    return user
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        if not username or not password:
+            flash('Identifiant et mot de passe requis')
+            return redirect(url_for('home'))
+
+        # create user
+        pw_hash = generate_password_hash(password)
+        conn = get_db_connection()
+        try:
+            conn.execute('INSERT INTO users (username, password_hash) VALUES (?, ?)', (username, pw_hash))
+            conn.commit()
+        except Exception as e:
+            conn.close()
+            flash('Impossible de créer le compte (identifiant peut-être déjà utilisé)')
+            return redirect(url_for('home'))
+        conn.close()
+        flash('Compte créé. Vous pouvez vous connecter.')
+        return redirect(url_for('home'))
+    return render_template('creation.html')
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'GET':
+        return render_template('login.html')
+
+    username = request.form.get('username')
+    password = request.form.get('password')
+    if not username or not password:
+        flash('Identifiant et mot de passe requis')
+        return redirect(url_for('home'))
+
+    user = get_user_by_username(username)
+    if not user or not check_password_hash(user['password_hash'], password):
+        flash('Identifiant ou mot de passe invalide')
+        return redirect(url_for('home'))
+
+    # success
+    session.clear()
+    session['user_id'] = user['id']
+    session['username'] = user['username']
+    flash('Connecté')
+    return redirect(url_for('index'))
+
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('Déconnecté')
+    return redirect(url_for('home'))
 
 @app.route('/ajouter', methods=['GET', 'POST'])
 def ajouter():
@@ -286,6 +374,52 @@ def supprimer(id):
     finally:
         conn.close()
     return redirect(url_for('index'))
+
+
+@app.route('/api/etudiant/<int:etudiant_id>')
+def api_etudiant(etudiant_id):
+    """Renvoie les informations d'un étudiant (et ses résidences + dernier relevé) en JSON."""
+    conn = get_db_connection()
+    student = conn.execute('SELECT id, nom, prenom FROM etudiants WHERE id = ?', (etudiant_id,)).fetchone()
+    if not student:
+        conn.close()
+        return jsonify({'error': 'Étudiant introuvable'}), 404
+
+    rows = conn.execute('''
+        SELECT r.id, r.ville, r.adresse, r.lat, r.lon, r.type,
+               m.temp, m.description, m.date_releve
+        FROM residences r
+        LEFT JOIN releves_meteo m
+          ON m.id = (
+              SELECT id FROM releves_meteo
+              WHERE residence_id = r.id
+              ORDER BY date_releve DESC
+              LIMIT 1
+          )
+        WHERE r.etudiant_id = ?
+    ''', (etudiant_id,)).fetchall()
+
+    residences = []
+    for r in rows:
+        residences.append({
+            'id': r['id'],
+            'ville': r['ville'],
+            'adresse': r['adresse'],
+            'lat': r['lat'],
+            'lon': r['lon'],
+            'type': r['type'],
+            'temp': r['temp'],
+            'description': r['description'],
+            'date_releve': r['date_releve']
+        })
+
+    conn.close()
+    return jsonify({
+        'id': student['id'],
+        'nom': student['nom'],
+        'prenom': student['prenom'],
+        'residences': residences
+    })
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

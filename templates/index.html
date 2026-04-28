@@ -1,370 +1,602 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Climatomètre R&T</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/leaflet.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/MarkerCluster.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/MarkerCluster.Default.css') }}" />
-    <style>
-        :root {
-            --bg-gradient: linear-gradient(135deg, #2e2e2e, #1f1f1f);
-            --card-bg: rgba(40, 40, 40, 0.75);
-            --text-main: #e8f5ee;
-            --text-label: #b7d4c7;
-            --text-placeholder: #9fb5aa;
-            --input-bg: rgba(126, 214, 165, 0.08);
-            --border-color: rgba(255,255,255,0.08);
-            --accent: #4caf7d;
-            --accent-light: #7ed6a5;
-        }
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Climatomètre R&T</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/leaflet.css') }}" />
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/MarkerCluster.css') }}" />
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/MarkerCluster.Default.css') }}" />
+        <style>
+            /* fix global box model and disable page scrolling (no vertical or horizontal scroll) */
+            * { box-sizing: border-box; }
+            html, body { overflow: hidden; height: 100%; }
 
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: 'Quicksand', sans-serif;
-            background: var(--bg-gradient);
-            color: var(--text-main);
-            background-attachment: fixed;
-        }
+            :root {
+                --bg-gradient: linear-gradient(135deg, #2e2e2e, #1f1f1f);
+                --card-bg: rgba(40, 40, 40, 0.75);
+                --card-bg-solid: #282828;
+                --text-main: #e8f5ee;
+                --text-label: #b7d4c7;
+                --text-placeholder: #9fb5aa;
+                --input-bg: rgba(126, 214, 165, 0.08);
+                --border-color: rgba(255,255,255,0.08);
+                --accent: #4caf7d;
+                --accent-light: #7ed6a5;
+            }
 
-        .conteneur {
-            max-width: 1180px;
-            margin: 30px auto;
-            padding: 0 20px 40px;
-        }
+            body {
+                margin: 0;
+                min-height: 100vh;
+                font-family: 'Quicksand', sans-serif;
+                background: var(--bg-gradient);
+                color: var(--text-main);
+                background-attachment: fixed;
+            }
 
-        .carte {
-            background: var(--card-bg);
-            backdrop-filter: blur(14px);
-            border-radius: 24px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.35);
-            overflow: hidden;
-        }
+            .conteneur {
+                max-width: none;
+                width: 100%;
+                margin: 30px 0 40px 14px;
+                padding: 0 20px 40px;
+            }
 
-        .entete-carte {
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            color: #0f1f17;
-            padding: 30px 30px;
-        }
+            .carte {
+                background: var(--card-bg);
+                backdrop-filter: blur(14px);
+                border-radius: 24px;
+                border: 1px solid var(--border-color);
+                box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+                padding: 30px 30px;
+                margin-left: 290px;
+                width: calc(100% - 310px);
+                position: relative;
+            }
 
-        .entete-carte h1 {
-            margin: 0;
-            font-size: 2rem;
-            letter-spacing: 0.02em;
-        }
-
-        .toolbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 15px;
-            padding: 22px 30px 10px;
-        }
-
-        .toolbar .search-box {
-            flex: 1;
-            display: flex;
-            gap: 10px;
-        }
-
-        .toolbar input {
-            width: 100%;
-            padding: 14px 16px;
-            border-radius: 14px;
-            border: 1px solid var(--border-color);
-            background: var(--input-bg);
-            color: var(--text-main);
-            font-size: 0.98rem;
-        }
-
-        .toolbar input::placeholder {
-            color: var(--text-placeholder);
-        }
-
-        .toolbar button,
-        .toolbar a.button {
-            border: none;
-            border-radius: 14px;
-            padding: 14px 22px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            color: #0f1f17;
-            cursor: pointer;
-            font-weight: 700;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .toolbar button:hover,
-        .toolbar a.button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 10px 24px rgba(0,0,0,0.2);
-        }
-
-        .section {
-            padding: 28px 30px 30px;
-        }
-
-        #map {
-            width: 100%;
-            height: 620px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.08);
-            margin-bottom: 24px;
-        }
-
-        .alert-info {
-            background: rgba(126, 214, 165, 0.12);
-            border-color: rgba(126, 214, 165, 0.22);
-            color: #dff5e0;
-            border-radius: 16px;
-            padding: 18px 22px;
-            margin-bottom: 28px;
-        }
-
-        .city-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 22px;
-        }
-
-        .city-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 20px;
-            padding: 22px;
-        }
-
-        .city-card h2 {
-            margin-top: 0;
-            margin-bottom: 16px;
-            font-size: 1.25rem;
-        }
-
-        .student-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 14px;
-            margin-bottom: 12px;
-            border-radius: 14px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.06);
-            transition: background 0.2s ease;
-        }
-
-        .student-item span {
-            color: #e8f5ee;
-            font-size: 0.95rem;
-        }
-
-        .student-item:hover {
-            background: rgba(126, 214, 165, 0.08);
-        }
-
-        .student-actions {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .student-item a {
-            border-radius: 12px;
-            padding: 8px 12px;
-            color: #fff;
-            text-decoration: none;
-            font-weight: 700;
-            transition: transform 0.2s ease;
-        }
-
-        .student-item a.delete {
-            background: #ff5f6d;
-        }
-
-        .student-item a.edit {
-            background: #3b82f6;
-        }
-
-        .student-item a:hover {
-            transform: translateY(-1px);
-        }
-
-        @media (max-width: 980px) {
-            .city-grid {
-                grid-template-columns: 1fr;
+            .entete-carte h1 {
+                margin: 0;
+                font-size: 2rem;
+                letter-spacing: 0.02em;
             }
 
             .toolbar {
-                flex-direction: column;
-                align-items: stretch;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 15px;
+                padding: 22px 30px 10px;
             }
 
             .toolbar .search-box {
-                width: 100%;
+                flex: 1;
+                display: flex;
+                gap: 10px;
             }
-        }
-    </style>
-</head>
-<body>
-    <div class="conteneur">
-        <div class="carte">
-            <div class="entete-carte">
-                <h1>Carte de la Promotion</h1>
-            </div>
 
-            <div class="toolbar">
-                <div class="search-box">
-                    <form id="searchForm" style="width:100%; display:flex; gap:10px;" onsubmit="return false;">
-                        <input type="text" id="searchInput" placeholder="Chercher par ville, adresse ou étudiant...">
-                        <button type="submit">Rechercher</button>
-                    </form>
+            .toolbar input {
+                width: 100%;
+                padding: 14px 16px;
+                border-radius: 14px;
+                border: 1px solid var(--border-color);
+                background: var(--input-bg);
+                color: var(--text-main);
+                font-size: 0.98rem;
+            }
+
+            .toolbar input::placeholder {
+                color: var(--text-placeholder);
+            }
+
+            .toolbar button,
+            .toolbar a.button {
+                border: none;
+                border-radius: 14px;
+                padding: 14px 22px;
+                background: linear-gradient(135deg, var(--accent), var(--accent-light));
+                color: #0f1f17;
+                cursor: pointer;
+                font-weight: 700;
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .toolbar button:hover,
+            .toolbar a.button:hover {
+                transform: translateY(-3px) scale(1.04);
+                box-shadow: 0 18px 48px rgba(0,0,0,0.36), 0 6px 18px rgba(78,195,140,0.12) inset;
+                filter: brightness(1.08);
+            }
+
+            .toolbar button:focus,
+            .toolbar a.button:focus {
+                outline: none;
+                box-shadow: 0 6px 18px rgba(78, 195, 140, 0.28);
+                transform: translateY(-1px) scale(1.01);
+            }
+
+            .section {
+                padding: 28px 30px 30px;
+            }
+
+            /* Deux colonnes : liste à gauche, carte à droite */
+            .layout {
+                display: flex;
+                gap: 40px;
+                align-items: flex-start;
+            }
+
+            .left-panel {
+                width: 260px;
+                position: fixed;
+                left: 14px;
+                top: 100px;
+                z-index: 1200;
+                background: var(--card-bg);
+                border: 1px solid rgba(255,255,255,0.06);
+                border-radius: 12px;
+                box-shadow: 0 8px 30px rgba(0,0,0,0.28);
+                display: flex;
+                flex-direction: column;
+                overflow: visible;
+            }
+
+            .left-panel .city-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .left-panel .left-scroll {
+                overflow: auto;
+                max-height: calc(100vh - 180px);
+                padding: 12px;
+            }
+
+            /* Right-side info card (inspired by form.html) */
+            .right-card {
+                width: 360px;
+                background: var(--card-bg-solid);
+                border: 1px solid rgba(0,0,0,0.12);
+                border-radius: 16px;
+                padding: 18px;
+                box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+                position: sticky;
+                top: 100px;
+                margin-left: 20px;
+                height: calc(100vh - 140px);
+                overflow: auto;
+                z-index: 1;
+                align-self: stretch;
+            }
+
+            .right-card h2 { margin: 0 0 8px 0; font-size: 1.1rem; }
+            .right-card .location { font-size: 0.95rem; color: var(--text-label); margin-bottom: 12px; }
+            .right-card .temp-section { font-size: 2rem; font-weight:700; display:flex; gap:12px; align-items:center; }
+            .right-card .tabs-menu { display:flex; gap:8px; margin-bottom:12px; }
+            .right-card .tab-btn { background: transparent; border:1px solid rgba(255,255,255,0.06); padding:6px 10px; border-radius:8px; cursor:pointer; color:var(--text-main); }
+            .right-card .tab-btn.active { background: rgba(126,214,165,0.12); border-color: rgba(126,214,165,0.18); }
+
+            /* Sticky only for the top list title, not for each city header */
+            .left-panel > h2 {
+                position: sticky;
+                top: 0;
+                margin: 0 0 12px 0;
+                padding: 0 12px;
+                background: var(--card-bg-solid);
+                border-bottom: 1px solid rgba(255,255,255,0.06);
+                z-index: 1300;
+                display: flex;
+                align-items: center;
+                height: 64px;
+                line-height: 1;
+                font-size: 1.05rem;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+            }
+
+            /* City card headers should not stick */
+            .left-panel .city-card h2 {
+                position: static;
+                margin: 10px 0 8px 0;
+                padding: 0;
+                background: transparent;
+                z-index: 1;
+            }
+
+            .right-panel {
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+
+            #map {
+                width: calc(100% - 40px);
+                max-width: 100%;
+                height: 560px;
+                border-radius: 20px;
+                border: 1px solid rgba(255,255,255,0.08);
+                margin: 0 auto 24px auto;
+                display: block;
+            }
+
+            .alert-info {
+                background: rgba(126, 214, 165, 0.12);
+                border-color: rgba(126, 214, 165, 0.22);
+                color: #dff5e0;
+                border-radius: 16px;
+                padding: 18px 22px;
+                margin-bottom: 28px;
+            }
+
+            .city-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 22px;
+            }
+
+            .city-card {
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.08);
+                border-radius: 20px;
+                padding: 22px;
+            }
+
+            .city-card h2 {
+                margin-top: 0;
+                margin-bottom: 16px;
+                font-size: 1.25rem;
+            }
+
+            .student-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 12px 14px;
+                margin-bottom: 12px;
+                border-radius: 14px;
+                background: rgba(255,255,255,0.04);
+                border: 1px solid rgba(255,255,255,0.06);
+                transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+            }
+
+            .student-item span {
+                color: #e8f5ee;
+                font-size: 0.95rem;
+            }
+
+            .student-item:hover {
+                background: rgba(126, 214, 165, 0.10);
+                transform: translateX(6px);
+                box-shadow: 0 8px 20px rgba(0,0,0,0.28);
+                border-color: rgba(126,214,165,0.18);
+            }
+
+            .student-item.selected {
+                background: rgba(126,214,165,0.12);
+                border-color: rgba(126,214,165,0.22);
+                box-shadow: 0 10px 26px rgba(0,0,0,0.32);
+                transform: translateX(6px);
+            }
+
+            .student-item a.edit,
+            .student-item a.delete {
+                transition: transform 0.12s ease, box-shadow 0.12s ease;
+            }
+
+            .student-item a.edit:hover,
+            .student-item a.delete:hover {
+                transform: translateY(-4px) scale(1.06);
+                box-shadow: 0 12px 30px rgba(0,0,0,0.28), 0 3px 8px rgba(0,0,0,0.12) inset;
+                filter: brightness(1.06);
+            }
+
+            .student-actions {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+
+            .student-item a {
+                border-radius: 12px;
+                padding: 8px 12px;
+                color: #fff;
+                text-decoration: none;
+                font-weight: 700;
+                transition: transform 0.2s ease;
+            }
+
+            .student-item a.delete {
+                background: #ff5f6d;
+            }
+
+            .student-item a.edit {
+                background: #3b82f6;
+            }
+
+            .student-item a:hover {
+                transform: translateY(-1px);
+            }
+
+            @media (max-width: 980px) {
+                .city-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .toolbar {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .toolbar .search-box {
+                    width: 100%;
+                }
+
+                .left-panel { display: none; }
+                .carte { margin-left: 0; }
+                .right-card { position: static; width: 100%; margin-top: 18px; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="conteneur">
+            <aside class="left-panel" aria-label="Liste des étudiants">
+                <h2 style="margin-top:0;">Liste des Étudiants par Ville</h2>
+                <div class="left-scroll">
+                    <div class="city-grid">
+                        {% for city in grouped_cities %}
+                        <div class="city-card" data-city="{{ city.ville }}">
+                            <h2>{{ city.ville }}</h2>
+                            <div>
+                                {% for student_key, student_data in city.students.items() | sort %}
+                                <div class="student-item" data-student="{{ student_key }}" data-address="{{ student_data.adresse }}" data-etid="{{ student_data.et_id }}">
+                                    <span>{{ student_data.info | safe }}</span>
+                                    <div class="student-actions">
+                                        <a href="/modifier/{{ student_data.et_id }}" class="edit">✎</a>
+                                        <a href="/supprimer/{{ student_data.et_id }}" class="delete" onclick="return confirm('Confirmer la suppression ?');">✕</a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
                 </div>
-                <a href="/ajouter" class="button">+ Ajouter un étudiant</a>
-            </div>
+            </aside>
+            <div class="carte">
+                <div class="entete-carte">
+                    <h1>Carte de la Promotion</h1>
+                </div>
 
-            <div class="section">
-                <div id="map"></div>
-                <div class="alert-info">Température Médiane : {{ mediane }}°C</div>
-                <h2>Liste des Étudiants par Ville</h2>
-                <div class="city-grid">
-                    {% for city in grouped_cities %}
-                    <div class="city-card" data-city="{{ city.ville }}">
-                        <h2>{{ city.ville }}</h2>
-                        <div>
-                            {% for student_key, student_data in city.students.items() | sort %}
-                            <div class="student-item" data-student="{{ student_key }}" data-address="{{ student_data.adresse }}">
-                                <span>{{ student_data.info | safe }}</span>
-                                <div class="student-actions">
-                                    <a href="/modifier/{{ student_data.et_id }}" class="edit">✎</a>
-                                    <a href="/supprimer/{{ student_data.et_id }}" class="delete" onclick="return confirm('Confirmer la suppression ?');">✕</a>
+                <div class="toolbar">
+                    <div class="search-box">
+                        <form id="searchForm" style="width:100%; display:flex; gap:10px;" onsubmit="return false;">
+                            <input type="text" id="searchInput" placeholder="Chercher par ville, adresse ou étudiant...">
+                            <button type="submit">Rechercher</button>
+                        </form>
+                    </div>
+                    <a href="/ajouter" class="button">+ Ajouter un étudiant</a>
+                </div>
+
+                <div class="section">
+                    <div class="layout">
+                        <main class="right-panel">
+                            <div id="map"></div>
+                            <div class="alert-info">Température Médiane : {{ mediane }}°C</div>
+                        </main>
+
+                        <aside class="right-card" aria-label="Fiche étudiant / météo">
+                            <div class="tabs-menu" style="display:none;" aria-hidden="true"></div>
+
+                            <h2 id="rc_name">NOM</h2>
+                            <div id="rc_location" class="location">VILLE</div>
+
+                            <h3 style="margin-top:12px;">TEMP</h3>
+                            <div class="temp-section">
+                                <span id="rc_temp">20°C</span>
+                            </div>
+
+                            <div class="note-section" style="margin-top:18px;">
+                                <h3>NOTE</h3>
+                                <div id="rc_notes">
+                                    <div style="height:18px;margin:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);"></div>
+                                    <div style="height:18px;margin:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);"></div>
+                                    <div style="height:18px;margin:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);"></div>
                                 </div>
                             </div>
-                            {% endfor %}
-                        </div>
+                        </aside>
                     </div>
-                    {% endfor %}
                 </div>
             </div>
         </div>
-    </div>
 
-    <script src="{{ url_for('static', filename='js/leaflet.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/leaflet.markercluster.js') }}"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            function applySearch() {
-                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-                const cards = document.querySelectorAll('.city-card');
-
-                cards.forEach(card => {
-                    const city = card.getAttribute('data-city').toLowerCase();
-                    const studentEls = card.querySelectorAll('[data-student]');
-                    let cardMatch = false;
-
-                    studentEls.forEach(el => {
-                        const studentName = el.getAttribute('data-student').toLowerCase();
-                        const address = el.getAttribute('data-address').toLowerCase();
-                        const matches = city.includes(searchTerm) || studentName.includes(searchTerm) || address.includes(searchTerm);
-                        el.style.display = matches ? 'flex' : 'none';
-                        if (matches) cardMatch = true;
-                    });
-
-                    card.style.display = cardMatch ? 'block' : 'none';
-                });
-            }
-
-            document.getElementById('searchInput').addEventListener('input', applySearch);
-            document.getElementById('searchForm').addEventListener('submit', function(event) {
-                event.preventDefault();
-                applySearch();
-            });
-
-            if (typeof L === 'undefined') {
-                console.warn('Leaflet n\'est pas chargé, la carte ne peut pas s\'afficher.');
-                return;
-            }
-
-            try {
-                var map = L.map('map').setView([47.50, 6.80], 9);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap'
-                }).addTo(map);
-
-                var locations = {{ points | tojson }};
-                var coordGroups = {};
-                locations.forEach(function(loc) {
-                    var key = loc.lat + ',' + loc.lon;
-                    coordGroups[key] = coordGroups[key] || [];
-                    coordGroups[key].push(loc);
-                });
-
-                Object.values(coordGroups).forEach(function(group) {
-                    if (group.length <= 1) return;
-                    var radius = 0.00008;
-                    group.forEach(function(loc, idx) {
-                        var angle = (2 * Math.PI * idx) / group.length;
-                        loc._lat = loc.lat + radius * Math.cos(angle);
-                        loc._lon = loc.lon + radius * Math.sin(angle);
-                    });
-                });
-
-                var markerClusterGroup = L.markerClusterGroup({
-                    maxClusterRadius: 40,
-                    disableClusteringAtZoom: 17,
-                    spiderfyOnMaxZoom: true,
-                    showCoverageOnHover: false,
-                    zoomToBoundsOnClick: true
-                });
-                var markers = [];
-
-                locations.forEach(function(loc) {
-                    var lat = loc._lat || loc.lat;
-                    var lon = loc._lon || loc.lon;
-                    var marker = L.marker([lat, lon]);
-                    marker.bindPopup(loc.popup);
-                    marker.searchText = loc.search;
-                    markers.push(marker);
-                    markerClusterGroup.addLayer(marker);
-                });
-
-                map.addLayer(markerClusterGroup);
-
-                function filterMarkers() {
+        <script src="{{ url_for('static', filename='js/leaflet.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/leaflet.markercluster.js') }}"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                function applySearch() {
                     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-                    markerClusterGroup.clearLayers();
+                    const cards = document.querySelectorAll('.city-card');
 
-                    markers.forEach(function(marker) {
-                        const matches = !searchTerm || marker.searchText.includes(searchTerm);
-                        if (matches) {
-                            markerClusterGroup.addLayer(marker);
-                        }
-                    });
+                    cards.forEach(card => {
+                        const city = card.getAttribute('data-city').toLowerCase();
+                        const studentEls = card.querySelectorAll('[data-student]');
+                        let cardMatch = false;
 
-                    const visibleLayers = markerClusterGroup.getLayers();
-                    if (visibleLayers.length > 0) {
-                        map.fitBounds(markerClusterGroup.getBounds(), {
-                            padding: [40, 40],
-                            maxZoom: 16
+                        studentEls.forEach(el => {
+                            const studentName = el.getAttribute('data-student').toLowerCase();
+                            const address = el.getAttribute('data-address').toLowerCase();
+                            const matches = city.includes(searchTerm) || studentName.includes(searchTerm) || address.includes(searchTerm);
+                            el.style.display = matches ? 'flex' : 'none';
+                            if (matches) cardMatch = true;
                         });
-                    } else {
-                        map.setView([47.50, 6.80], 9);
-                    }
+
+                        card.style.display = cardMatch ? 'block' : 'none';
+                    });
                 }
 
-                document.getElementById('searchInput').addEventListener('input', filterMarkers);
+                document.getElementById('searchInput').addEventListener('input', applySearch);
                 document.getElementById('searchForm').addEventListener('submit', function(event) {
                     event.preventDefault();
-                    filterMarkers();
+                    applySearch();
                 });
-            } catch (error) {
-                console.error('Erreur carte:', error);
+
+                if (typeof L === 'undefined') {
+                    console.warn('Leaflet n\'est pas chargé, la carte ne peut pas s\'afficher.');
+                    return;
+                }
+
+                try {
+                    var map = L.map('map').setView([47.50, 6.80], 9);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap'
+                    }).addTo(map);
+
+                    var locations = {{ points | tojson }};
+                    var coordGroups = {};
+                    locations.forEach(function(loc) {
+                        var key = loc.lat + ',' + loc.lon;
+                        coordGroups[key] = coordGroups[key] || [];
+                        coordGroups[key].push(loc);
+                    });
+
+                    Object.values(coordGroups).forEach(function(group) {
+                        if (group.length <= 1) return;
+                        var radius = 0.00008;
+                        group.forEach(function(loc, idx) {
+                            var angle = (2 * Math.PI * idx) / group.length;
+                            loc._lat = loc.lat + radius * Math.cos(angle);
+                            loc._lon = loc.lon + radius * Math.sin(angle);
+                        });
+                    });
+
+                    var markerClusterGroup = L.markerClusterGroup({
+                        maxClusterRadius: 40,
+                        disableClusteringAtZoom: 17,
+                        spiderfyOnMaxZoom: true,
+                        showCoverageOnHover: false,
+                        zoomToBoundsOnClick: true
+                    });
+                    var markers = [];
+
+                    locations.forEach(function(loc) {
+                        var lat = loc._lat || loc.lat;
+                        var lon = loc._lon || loc.lon;
+                        var marker = L.marker([lat, lon]);
+                        marker.bindPopup(loc.popup);
+                        marker.searchText = loc.search;
+                        // attach student ids for click handling
+                        marker.student_ids = loc.student_ids || [];
+                        marker.on('click', function(e) {
+                            // if there are associated student ids, load the first one
+                            if (marker.student_ids && marker.student_ids.length) {
+                                try {
+                                    loadStudent(marker.student_ids[0]);
+                                } catch (err) {
+                                    console.error('Erreur lors du chargement de l\'étudiant:', err);
+                                }
+                            }
+                        });
+                        markers.push(marker);
+                        markerClusterGroup.addLayer(marker);
+                    });
+
+                    map.addLayer(markerClusterGroup);
+
+                    function filterMarkers() {
+                        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+                        markerClusterGroup.clearLayers();
+
+                        markers.forEach(function(marker) {
+                            const matches = !searchTerm || marker.searchText.includes(searchTerm);
+                            if (matches) {
+                                markerClusterGroup.addLayer(marker);
+                            }
+                        });
+
+                        const visibleLayers = markerClusterGroup.getLayers();
+                        if (visibleLayers.length > 0) {
+                            map.fitBounds(markerClusterGroup.getBounds(), {
+                                padding: [40, 40],
+                                maxZoom: 16
+                            });
+                        } else {
+                            map.setView([47.50, 6.80], 9);
+                        }
+                    }
+
+                    document.getElementById('searchInput').addEventListener('input', filterMarkers);
+                    document.getElementById('searchForm').addEventListener('submit', function(event) {
+                        event.preventDefault();
+                        filterMarkers();
+                    });
+                } catch (error) {
+                    console.error('Erreur carte:', error);
+                }
+            });
+        </script>
+        <script>
+            // Right-card interactivity: load student data from backend and populate the card
+            function loadStudent(etid) {
+                if (!etid) return;
+                fetch('/api/etudiant/' + etid)
+                    .then(resp => resp.json())
+                    .then(data => {
+                        if (data.error) return;
+                        const name = (data.prenom || '') + ' ' + (data.nom || '');
+                        document.getElementById('rc_name').innerText = name.trim() || 'NOM';
+
+                        // Prefer residence type 'principale'
+                        const primary = (data.residences || []).find(r => r.type && r.type.toLowerCase().trim() === 'principale') || (data.residences && data.residences[0]) || null;
+                        if (primary) {
+                            const loc = (primary.ville || '') + (primary.adresse ? (', ' + primary.adresse) : '');
+                            document.getElementById('rc_location').innerText = loc || 'VILLE';
+                            document.getElementById('rc_temp').innerText = (primary.temp !== null && primary.temp !== undefined) ? String(primary.temp) + '°C' : '--';
+                        } else {
+                            document.getElementById('rc_location').innerText = 'VILLE';
+                            document.getElementById('rc_temp').innerText = '--';
+                        }
+
+                        // Fill notes/description from residences (latest descriptions)
+                        const notesEl = document.getElementById('rc_notes');
+                        notesEl.innerHTML = '';
+                        if (data.residences && data.residences.length) {
+                            data.residences.forEach(r => {
+                                const d = document.createElement('div');
+                                d.style.margin = '6px 0';
+                                d.style.paddingBottom = '6px';
+                                d.style.borderBottom = '1px solid rgba(255,255,255,0.06)';
+                                d.innerHTML = `<strong>${(r.type||'résidence').toString()}</strong>: ${r.ville || ''}${r.adresse ? ', '+r.adresse : ''}` +
+                                              (r.temp !== null && r.temp !== undefined ? ` — ${r.temp}°C` : '') +
+                                              (r.description ? `<div style="font-size:0.9rem;margin-top:6px;color:var(--text-label);">${r.description}</div>` : '');
+                                notesEl.appendChild(d);
+                            });
+                        } else {
+                            notesEl.innerHTML = '<div style="color:var(--text-placeholder)">Aucune résidence renseignée.</div>';
+                        }
+                    })
+                    .catch(err => console.error('Erreur fetch student:', err));
             }
-        });
-    </script>
-</body>
-</html>
+
+            document.addEventListener('DOMContentLoaded', function(){
+                // Attach click handlers to student items
+                document.querySelectorAll('.student-item').forEach(function(item){
+                    item.addEventListener('click', function(e){
+                        // Ignore clicks on action links
+                        if (e.target.closest('a')) return;
+                        const etid = item.getAttribute('data-etid');
+                        loadStudent(etid);
+                        // highlight selected
+                        document.querySelectorAll('.student-item').forEach(si => si.classList.remove('selected'));
+                        item.classList.add('selected');
+                    });
+                });
+
+
+
+                // Optionally, load the first student on page load
+                const first = document.querySelector('.student-item[data-etid]');
+                if (first) loadStudent(first.getAttribute('data-etid'));
+            });
+        </script>
+    </body>
+    </html>

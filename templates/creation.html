@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Création de compte</title>
+    <link rel="icon" href="/static/logo_.png">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #2e2e2e, #1f1f1f);
+            --card-bg: rgba(40, 40, 40, 0.6);
+            --text-main: #e8f5ee;
+            --text-label: #b7d4c7;
+            --text-placeholder: #9fb5aa;
+            --input-bg: rgba(126, 214, 165, 0.08);
+            --border-color: rgba(255,255,255,0.05);
+        }
+        body.light-theme {
+            --bg-gradient: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            --card-bg: rgba(232, 232, 232, 0.9);
+            --text-main: #121a22;
+            --text-label: #243238;
+            --text-placeholder: #90a4ae;
+            --input-bg: rgba(76, 175, 125, 0.05);
+            --border-color: rgba(0,0,0,0.1);
+        }
+        body {
+            margin: 0;
+            font-family: 'Quicksand', sans-serif;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-main);
+            transition: background 0.3s ease;
+        }
+        .theme-toggle { position: fixed; top: 20px; right: 20px; background: linear-gradient(135deg,#4caf7d,#7ed6a5); border:none; padding:10px 15px; border-radius:50px; cursor:pointer; font-weight:600; color:#0f1f17; box-shadow:0 4px 15px rgba(0,0,0,0.2); z-index:1000; display:flex; align-items:center; gap:8px; }
+        .conteneur { max-width:650px; margin:60px auto; padding:0 20px; }
+        .carte { background:var(--card-bg); backdrop-filter:blur(14px); border-radius:20px; box-shadow:0 20px 40px rgba(0,0,0,0.3); overflow:hidden; border:1px solid var(--border-color); }
+        .entete-carte { background: linear-gradient(135deg,#4caf7d,#7ed6a5); color:#0f1f17; text-align:center; padding:30px 20px; border-radius:20px; }
+        .entete-carte h2 { margin:0; font-weight:700; }
+        .corps-carte { padding:30px; }
+        .separateur { font-size:0.75rem; font-weight:600; color:#4caf7d; text-transform:uppercase; letter-spacing:1px; margin:25px 0 15px 0; border-bottom:1px solid rgba(76,175,125,0.2); padding-bottom:5px; }
+        .ligne { display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px; }
+        .colonne { flex:1 1 0; min-width:0; }
+        .etiquette { display:block; margin-bottom:6px; font-size:0.85rem; color:var(--text-label); }
+        .champ { width:100%; padding:12px 14px; border-radius:12px; border:1px solid rgba(126,214,165,0.4); font-size:0.95rem; background:var(--input-bg); color:var(--text-main); transition:all 0.2s ease; box-sizing:border-box; }
+        .champ:focus { outline:none; border-color:#7ed6a5; box-shadow:0 0 0 3px rgba(126,214,165,0.25); }
+        .actions { margin-top:40px; display:flex; justify-content:space-between; align-items:center; }
+        .bouton { background:linear-gradient(135deg,#4caf7d,#7ed6a5); color:#0f1f17; border:none; padding:12px 30px; border-radius:12px; cursor:pointer; font-size:1rem; font-weight:700; }
+        .bouton:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(76,175,125,0.3); }
+        .lien { color:var(--text-placeholder); text-decoration:none; font-size:0.9rem; }
+        .lien:hover { color:#4caf7d; text-decoration:underline; }
+        @media (max-width:600px){ .ligne{ flex-direction:column; } }
+    </style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()">
+    <span id="theme-icon">☀️</span> <span id="theme-text">Mode Clair</span>
+</button>
+
+<div class="conteneur">
+    <div class="carte">
+        <div class="entete-carte"><h2>Création de compte</h2></div>
+        <div class="corps-carte">
+            <form method="POST" action="/register">
+                <div class="separateur">Informations obligatoires</div>
+                <div class="ligne">
+                    <div class="colonne">
+                        <label class="etiquette">Nom</label>
+                        <input type="text" name="nom" class="champ" required>
+                    </div>
+                    <div class="colonne">
+                        <label class="etiquette">Prénom</label>
+                        <input type="text" name="prenom" class="champ" required>
+                    </div>
+                </div>
+                <div class="separateur">Compte</div>
+                <div class="ligne">
+                    <div class="colonne">
+                        <label class="etiquette">Nom d'utilisateur</label>
+                        <input type="text" name="username" class="champ" placeholder="identifiant" required>
+                    </div>
+                    <div class="colonne">
+                        <label class="etiquette">Mot de passe</label>
+                        <input type="password" name="password" class="champ" placeholder="••••••••" required>
+                    </div>
+                </div>
+                <div class="separateur">Résidence</div>
+                <div style="margin-bottom:15px;">
+                    <label class="etiquette">Ville de résidence</label>
+                    <input type="text" name="ville" class="champ" placeholder="ex: Montbéliard" required>
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label class="etiquette">Adresse précise</label>
+                    <input type="text" name="adresse_precise" class="champ" placeholder="ex: 4 Place Tharradin">
+                </div>
+                <div class="separateur">Résidence secondaire</div>
+                <div class="ligne">
+                    <div class="colonne"><label class="etiquette">Ville</label><input type="text" name="ville2" class="champ"></div>
+                </div>
+                <div style="margin-bottom:15px;"><label class="etiquette">Adresse précise</label><input type="text" name="adresse_precise2" class="champ"></div>
+                <div class="actions">
+                    <a href="/login" class="lien">Déjà inscrit ? Se connecter</a>
+                    <button type="submit" class="bouton">S'inscrire</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleTheme(){ const body=document.body, icon=document.getElementById('theme-icon'), text=document.getElementById('theme-text'); body.classList.toggle('light-theme'); if(body.classList.contains('light-theme')){ icon.innerText='🌙'; text.innerText='Thème Sombre'; } else { icon.innerText='☀️'; text.innerText='Thème Clair'; } }
+</script>
+
+</body>
+</html>

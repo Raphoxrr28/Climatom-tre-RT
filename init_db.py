@@ -1,6 +1,7 @@
 import sqlite3
 import json
 import os
+from werkzeug.security import generate_password_hash
 
 DB_NAME = "climatometre.db"
 DATA_FILE = "membres.json"
@@ -43,6 +44,18 @@ def create_schema(cursor):
         FOREIGN KEY (residence_id) REFERENCES residences(id)
     )''')
 
+    # Do NOT drop the users table here to avoid erasing existing accounts.
+    # Create it only if it does not exist so existing users are preserved.
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE,
+        email TEXT,
+        password_hash TEXT NOT NULL,
+        role TEXT DEFAULT 'user',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )''')
+
 def import_data(cursor):
     if not os.path.exists(DATA_FILE):
         print("Erreur : membres.json introuvable.")
@@ -67,6 +80,17 @@ def main():
     try:
         create_schema(cursor)
         import_data(cursor)
+        # create a default admin user (username: admin, password: admin)
+        try:
+            cursor.execute("SELECT id FROM users WHERE username = ?", ('admin',))
+            if not cursor.fetchone():
+                admin_pw = generate_password_hash('admin')
+                cursor.execute("INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)", ('admin', admin_pw, 'admin'))
+                print('Compte admin créé: admin / admin')
+            else:
+                print('Compte admin déjà présent, non modifié')
+        except Exception as e:
+            print('Erreur lors de la création admin:', e)
         conn.commit()
         print("\n[OK] Base de données initialisée avec colonnes GPS.")
     except Exception as e:
