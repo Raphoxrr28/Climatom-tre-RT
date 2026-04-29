@@ -2,6 +2,8 @@
 # 🌍 Projet Climatomètre RT - Documentation Technique
 **BUT Réseaux et Télécommunications**
 
+> ### 📚 [CLIQUEZ ICI POUR VOIR LES RESSOURCES DU PROJET (resources.md)](./resources.md)
+
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/Raphoxrr28/Climatom-tre-RT)
 [![Python](https://img.shields.io/badge/Python-3.10+-green.svg)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Framework-Flask-lightgrey.svg)](https://flask.palletsprojects.com/)
