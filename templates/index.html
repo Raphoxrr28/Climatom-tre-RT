@@ -166,7 +166,9 @@
                 top: 100px;
                 margin-left: 20px;
                 height: calc(100vh - 140px);
-                overflow: auto;
+                overflow-y: auto;  /* Autorise le scroll vertical uniquement */
+                overflow-x: hidden; /* Bloque strictement le scroll horizontal */
+            word-wrap: break-word; /* Force le texte trop long à revenir à la ligne */
                 z-index: 1;
                 align-self: stretch;
             }
@@ -451,12 +453,49 @@
                     return;
                 }
 
+                
                 try {
+                    // 1. Initialisation de la carte
                     var map = L.map('map').setView([47.50, 6.80], 9);
+                    
+                    // 2. Fond de carte de base (OpenStreetMap)
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                         attribution: '© OpenStreetMap'
                     }).addTo(map);
 
+                    // --- BLOC METEO SECURISE ---
+                    var weatherApiKey = "0814e8d3aebacae244d30c3b2ee748f0"; // <--- METS TA CLÉ ICI ENTRE LES GUILLEMETS
+
+                    // On vérifie que la clé a été saisie pour ne pas faire planter la carte
+                    if (weatherApiKey !== "TA_CLE_API_ICI" && weatherApiKey !== "") {
+                        var clouds = L.tileLayer('https://tile.openweathermap.org/map/clouds_new/{z}/{x}/{y}.png?appid=' + weatherApiKey, {
+                            attribution: 'Météo &copy; OpenWeatherMap',
+                            opacity: 0.7
+                        });
+
+                        var rain = L.tileLayer('https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=' + weatherApiKey, {
+                            attribution: 'Météo &copy; OpenWeatherMap',
+                            opacity: 0.7
+                        });
+
+                        var temp = L.tileLayer('https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=' + weatherApiKey, {
+                            attribution: 'Météo &copy; OpenWeatherMap',
+                            opacity: 0.5
+                        });
+
+                        var weatherLayers = {
+                            "Afficher les Nuages": clouds,
+                            "Afficher la Pluie": rain,
+                            "Zones de Température": temp
+                        };
+                        
+                        // Ajoute le menu de contrôle en haut à droite
+                        L.control.layers(null, weatherLayers, {collapsed: false}).addTo(map);
+                    }
+                    // --- FIN DU BLOC METEO ---
+
+
+                    // 3. Traitement des données des étudiants
                     var locations = {{ points | tojson }};
                     var coordGroups = {};
                     locations.forEach(function(loc) {
@@ -490,10 +529,9 @@
                         var marker = L.marker([lat, lon]);
                         marker.bindPopup(loc.popup);
                         marker.searchText = loc.search;
-                        // attach student ids for click handling
                         marker.student_ids = loc.student_ids || [];
+                        
                         marker.on('click', function(e) {
-                            // if there are associated student ids, load the first one
                             if (marker.student_ids && marker.student_ids.length) {
                                 try {
                                     loadStudent(marker.student_ids[0]);
@@ -508,6 +546,7 @@
 
                     map.addLayer(markerClusterGroup);
 
+                    // 4. Fonction de recherche/filtrage
                     function filterMarkers() {
                         const searchTerm = document.getElementById('searchInput').value.toLowerCase();
                         markerClusterGroup.clearLayers();
@@ -535,6 +574,7 @@
                         event.preventDefault();
                         filterMarkers();
                     });
+
                 } catch (error) {
                     console.error('Erreur carte:', error);
                 }

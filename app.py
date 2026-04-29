@@ -518,7 +518,7 @@ def api_etudiant(etudiant_id):
         return jsonify({'error': 'Étudiant introuvable'}), 404
 
     rows = conn.execute('''
-        SELECT r.id, r.ville, r.adresse, r.lat, r.lon, r.type,
+        SELECT r.id, r.ville, r.adresse, r.lat, r.lon, r.type, r.date_debut, r.date_fin,
                m.temp, m.description, m.date_releve
         FROM residences r
         LEFT JOIN releves_meteo m
@@ -540,6 +540,8 @@ def api_etudiant(etudiant_id):
             'lat': r['lat'],
             'lon': r['lon'],
             'type': r['type'],
+            'date_debut': r['date_debut'],
+            'date_fin': r['date_fin'],
             'temp': r['temp'],
             'description': r['description'],
             'date_releve': r['date_releve']
