@@ -1,0 +1,65 @@
+nohup: ignoring input
+ * Serving Flask app 'app'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 462-458-727
+127.0.0.1 - - [29/Apr/2026 10:03:45] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:03:52] "[32mPOST /login HTTP/1.1[0m" 302 -
+127.0.0.1 - - [29/Apr/2026 10:03:52] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:04:01] "[32mPOST /login HTTP/1.1[0m" 302 -
+127.0.0.1 - - [29/Apr/2026 10:04:01] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:04:06] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:04:11] "[32mPOST /login HTTP/1.1[0m" 302 -
+127.0.0.1 - - [29/Apr/2026 10:04:11] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:04:13] "GET /forgot-password HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:05:54] "GET /forgot-password HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:06:00] "[32mPOST /forgot-password HTTP/1.1[0m" 302 -
+127.0.0.1 - - [29/Apr/2026 10:06:00] "GET /reset-password HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:06:08] "[32mPOST /reset-password HTTP/1.1[0m" 302 -
+127.0.0.1 - - [29/Apr/2026 10:06:08] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:06:36] "[32mPOST /login HTTP/1.1[0m" 302 -
+127.0.0.1 - - [29/Apr/2026 10:06:36] "GET /map HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:06:36] "[36mGET /static/css/leaflet.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [29/Apr/2026 10:06:36] "[36mGET /static/js/leaflet.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [29/Apr/2026 10:06:36] "[36mGET /static/css/MarkerCluster.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [29/Apr/2026 10:06:36] "[36mGET /static/js/leaflet.markercluster.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [29/Apr/2026 10:06:36] "[36mGET /static/css/MarkerCluster.Default.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [29/Apr/2026 10:06:36] "[36mGET /static/css/images/marker-icon.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [29/Apr/2026 10:06:36] "[36mGET /static/css/images/marker-shadow.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [29/Apr/2026 10:06:36] "GET /api/etudiant/1 HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:13:23] "GET /admin HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:13:27] "GET /admin/table/users HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:20:04] "GET /admin HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:20:10] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:20:18] "[32mPOST /login HTTP/1.1[0m" 302 -
+127.0.0.1 - - [29/Apr/2026 10:20:18] "GET /map HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:20:18] "[36mGET /static/css/leaflet.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [29/Apr/2026 10:20:18] "[36mGET /static/css/MarkerCluster.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [29/Apr/2026 10:20:18] "[36mGET /static/js/leaflet.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [29/Apr/2026 10:20:18] "[36mGET /static/css/MarkerCluster.Default.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [29/Apr/2026 10:20:18] "[36mGET /static/js/leaflet.markercluster.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [29/Apr/2026 10:20:18] "[36mGET /static/css/images/marker-icon.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [29/Apr/2026 10:20:18] "[36mGET /static/css/images/marker-shadow.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [29/Apr/2026 10:20:18] "GET /api/etudiant/15 HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:20:38] "GET /admin HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:20:40] "GET /admin/table/etudiants HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:20:46] "GET /admin/table/residences HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:23:38] "GET /admin HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:23:40] "GET /admin/table/etudiants HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:23:45] "GET /admin/table/residences HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:24:06] "GET /admin/table/releves_meteo HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:24:25] "GET /admin HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:24:38] "[32mPOST /login HTTP/1.1[0m" 302 -
+127.0.0.1 - - [29/Apr/2026 10:24:38] "GET /map HTTP/1.1" 200 -
+127.0.0.1 - - [29/Apr/2026 10:24:38] "[36mGET /static/js/leaflet.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [29/Apr/2026 10:24:38] "[36mGET /static/css/leaflet.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [29/Apr/2026 10:24:38] "[36mGET /static/js/leaflet.markercluster.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [29/Apr/2026 10:24:38] "[36mGET /static/css/MarkerCluster.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [29/Apr/2026 10:24:38] "[36mGET /static/css/MarkerCluster.Default.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [29/Apr/2026 10:24:38] "[36mGET /static/css/images/marker-icon.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [29/Apr/2026 10:24:38] "[36mGET /static/css/images/marker-shadow.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [29/Apr/2026 10:24:38] "GET /api/etudiant/15 HTTP/1.1" 200 -

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier Étudiant</title>
+    <link rel="icon" href="logo_.png">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #2e2e2e, #1f1f1f);
+            --card-bg: rgba(40, 40, 40, 0.6);
+            --text-main: #e8f5ee;
+            --text-label: #b7d4c7;
+            --text-placeholder: #9fb5aa;
+            --input-bg: rgba(126, 214, 165, 0.08);
+            --border-color: rgba(255,255,255,0.05);
+            --accent: #4caf7d;
+            --accent-dark: #2c8b5b;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Quicksand', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--accent), #97d7a7);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #0f1f17;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .conteneur {
+            max-width: 720px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+
+        .carte {
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .entete-carte {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: #0f1f17;
+            text-align: center;
+            padding: 35px 20px;
+            border-radius: 20px;
+        }
+
+        .entete-carte h2 {
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .corps-carte {
+            padding: 35px;
+        }
+
+        .separateur {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 30px 0 15px 0;
+        }
+
+        .ligne {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .colonne {
+            flex: 1 1 0;
+            min-width: 0;
+        }
+
+        .etiquette {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            color: var(--text-label);
+        }
+
+        .champ {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(126, 214, 165, 0.4);
+            font-size: 0.95rem;
+            background: var(--input-bg);
+            color: var(--text-main);
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .champ::placeholder {
+            color: var(--text-placeholder);
+        }
+
+        .champ:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: rgba(126, 214, 165, 0.15);
+            box-shadow: 0 0 0 3px rgba(126, 214, 165, 0.17);
+        }
+
+        .marge-bas {
+            margin-bottom: 18px;
+        }
+
+        .marge-haut {
+            margin-top: 45px;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bouton {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: #0f1f17;
+            border: none;
+            padding: 12px 26px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .bouton:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(76, 175, 125, 0.25);
+        }
+
+        .lien {
+            color: var(--text-placeholder);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .lien:hover {
+            color: var(--accent);
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            .ligne {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="conteneur">
+    <div class="carte">
+        <div class="entete-carte">
+            <h2>Modifier les informations</h2>
+        </div>
+
+        <div class="corps-carte">
+            <form method="POST" action="/modifier/{{ student['id'] }}">
+
+                <div class="separateur">Identité</div>
+                <div class="ligne">
+                    <div class="colonne">
+                        <label class="etiquette">Nom</label>
+                        <input type="text" name="nom" class="champ" value="{{ student['nom'] }}" required>
+                    </div>
+                    <div class="colonne">
+                        <label class="etiquette">Prénom</label>
+                        <input type="text" name="prenom" class="champ" value="{{ student['prenom'] }}" required>
+                    </div>
+                </div>
+
+                <div class="separateur">📍 Résidence Principale</div>
+                <div class="marge-bas">
+                    <label class="etiquette">Ville</label>
+                    <input type="text" name="ville_p" class="champ" value="{{ primary['ville'] if primary else '' }}" placeholder="ex: Montbéliard" required>
+                </div>
+                <div class="marge-bas">
+                    <label class="etiquette">Adresse précise</label>
+                    <input type="text" name="adresse_p" class="champ" value="{{ primary['adresse'] if primary else '' }}" placeholder="ex: 4 Place Tharradin">
+                </div>
+
+                <div class="separateur">🏠 Résidence Secondaire (Facultatif)</div>
+                <input type="hidden" name="secondary_res_id" value="{{ secondary['id'] if secondary else '' }}">
+                <div class="marge-bas">
+                    <label class="etiquette">Ville</label>
+                    <input type="text" name="ville_s" class="champ" value="{{ secondary['ville'] if secondary else '' }}">
+                </div>
+                <div class="marge-bas">
+                    <label class="etiquette">Adresse précise</label>
+                    <input type="text" name="adresse_s" class="champ" value="{{ secondary['adresse'] if secondary else '' }}">
+                </div>
+
+                <div class="marge-haut actions">
+                    <a href="/" class="lien">← Retour</a>
+                    <button type="submit" class="bouton">Sauvegarder</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

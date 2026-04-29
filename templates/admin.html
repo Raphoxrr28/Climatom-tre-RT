@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Tables</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100%; height: 100%; font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(135deg, #2e2e2e, #1f1f1f);
+            color: #e0e0e0;
+        }
+        body { padding: 20px; }
+        .conteneur { max-width: 900px; margin: 0 auto; }
+        h1 { font-size: 2rem; margin-bottom: 30px; color: #7ed6a5; }
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 15px 20px;
+            background: rgba(40, 40, 40, 0.8);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .user-info { font-size: 0.9rem; color: #b0b0b0; }
+        .user-info strong { color: #7ed6a5; }
+        a.logout-btn { padding: 8px 16px; background: #ff6b6b; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: 0.3s; }
+        a.logout-btn:hover { background: #ff5252; }
+        .tables-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .table-card {
+            background: rgba(40, 40, 40, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .table-card:hover {
+            background: rgba(40, 40, 40, 0.95);
+            border-color: rgba(126, 214, 165, 0.3);
+            box-shadow: 0 8px 24px rgba(126, 214, 165, 0.15);
+            transform: translateY(-4px);
+        }
+        .table-card h3 { font-size: 1.2rem; margin-bottom: 10px; color: #7ed6a5; }
+        .table-card p { font-size: 0.95rem; color: #b0b0b0; }
+        .table-card a { text-decoration: none; color: inherit; display: block; }
+        .badge { display: inline-block; background: rgba(126, 214, 165, 0.2); color: #7ed6a5; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .message { padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; }
+        .message.error { background: rgba(255, 95, 109, 0.12); border: 1px solid rgba(255, 95, 109, 0.25); color: #ff9a9f; }
+        .message.success { background: rgba(76, 175, 125, 0.12); border: 1px solid rgba(76, 175, 125, 0.25); color: #7ed6a5; }
+    </style>
+</head>
+<body>
+    <div class="conteneur">
+        <h1>Dashboard Admin</h1>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="message {{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <div class="toolbar">
+            {% if current_user %}
+                <div class="user-info">
+                    Connecté en tant que <strong>{{ current_user['username'] }}</strong>
+                </div>
+            {% endif %}
+            <a href="/logout" class="logout-btn">Déconnexion</a>
+        </div>
+
+        <div class="tables-grid">
+            {% for table in tables %}
+                <a href="/admin/table/{{ table.name }}" class="table-card">
+                    <h3>{{ table.name }}</h3>
+                    <p><span class="badge">{{ table.count }} lignes</span></p>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

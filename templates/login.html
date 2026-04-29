@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion</title>
+    <link rel="icon" href="/static/logo_.png">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #2e2e2e, #1f1f1f);
+            --card-bg: rgba(40, 40, 40, 0.6);
+            --text-main: #e8f5ee;
+            --text-label: #b7d4c7;
+            --text-placeholder: #9fb5aa;
+            --input-bg: rgba(126, 214, 165, 0.08);
+            --border-color: rgba(255,255,255,0.05);
+        }
+        body.light-theme {
+            --bg-gradient: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            --card-bg: rgba(232, 232, 232, 0.9);
+            --text-main: #121a22;
+            --text-label: #243238;
+            --text-placeholder: #90a4ae;
+            --input-bg: rgba(76, 175, 125, 0.05);
+            --border-color: rgba(0,0,0,0.1);
+        }
+        body {
+            margin: 0;
+            font-family: 'Quicksand', sans-serif;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #4caf7d, #7ed6a5);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #0f1f17;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .conteneur {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
+        .carte {
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+        .entete-carte {
+            background: linear-gradient(135deg, #4caf7d, #7ed6a5);
+            color: #0f1f17;
+            text-align: center;
+            padding: 40px 20px;
+            border-radius: 20px;
+        }
+        .entete-carte h2 { margin: 0; font-weight: 700; font-size: 1.8rem; }
+        .corps-carte { padding: 40px; }
+        .marge-bas { margin-bottom: 25px; }
+        .etiquette { display: block; margin-bottom: 8px; font-size: 0.85rem; color: var(--text-label); font-weight: 600; }
+        .champ {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(126, 214, 165, 0.4);
+            font-size: 1rem;
+            background: var(--input-bg);
+            color: var(--text-main);
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+        .champ:focus { outline: none; border-color: #7ed6a5; background: rgba(126,214,165,0.15); box-shadow: 0 0 0 3px rgba(126,214,165,0.25); }
+        .bouton-bloc { width:100%; background: linear-gradient(135deg,#4caf7d,#7ed6a5); color:#0f1f17; border:none; padding:14px; border-radius:12px; cursor:pointer; font-weight:700; }
+        .bouton-bloc:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(76,175,125,0.3); }
+        .pied-carte { text-align:center; margin-top:25px; }
+        .lien { color: var(--text-placeholder); text-decoration:none; font-size:0.9rem; }
+        .lien:hover { color: #4caf7d; text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()">
+    <span id="theme-icon">☀️</span> <span id="theme-text">Mode Clair</span>
+</button>
+
+<div class="conteneur">
+    <div class="carte">
+        <div class="entete-carte">
+            <h2>Connexion</h2>
+        </div>
+        <div class="corps-carte">
+            <form method="POST" action="/login">
+                <div class="marge-bas">
+                    <label class="etiquette">Nom d'utilisateur</label>
+                    <input type="text" name="username" class="champ" placeholder="Votre identifiant" required>
+                </div>
+                <div class="marge-bas">
+                    <label class="etiquette">Mot de passe</label>
+                    <input type="password" name="password" class="champ" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="bouton-bloc">Se connecter</button>
+                <div class="pied-carte">
+                    <a href="/register" class="lien">Pas encore de compte ? S'inscrire</a>
+                    <br><br>
+                    <a href="/forgot-password" class="lien">Mot de passe oublié ?</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleTheme() {
+        const body = document.body;
+        const icon = document.getElementById('theme-icon');
+        const text = document.getElementById('theme-text');
+        body.classList.toggle('light-theme');
+        if (body.classList.contains('light-theme')) { icon.innerText = '🌙'; text.innerText = 'Thème Sombre'; } else { icon.innerText = '☀️'; text.innerText = 'Thème Clair'; }
+    }
+</script>
+
+</body>
+</html>
