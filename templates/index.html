@@ -129,10 +129,10 @@
             }
 
             .left-panel {
-                width: 260px;
+                width: 330px;          /* On élargit pour éviter l'ascenseur du bas */
                 position: fixed;
                 left: 14px;
-                top: 100px;
+                top: 30px;             /* On remonte le rectangle vers le haut */
                 z-index: 1200;
                 background: var(--card-bg);
                 border: 1px solid rgba(255,255,255,0.06);
@@ -140,17 +140,18 @@
                 box-shadow: 0 8px 30px rgba(0,0,0,0.28);
                 display: flex;
                 flex-direction: column;
-                overflow: visible;
+                overflow: hidden;      /* Empêche les débordements visuels */
             }
 
             .left-panel .city-grid {
                 grid-template-columns: 1fr;
-                gap: 12px;
+                gap: 9px;
             }
 
             .left-panel .left-scroll {
-                overflow: auto;
-                max-height: calc(100vh - 180px);
+                overflow-y: auto;      /* Scroll vertical seulement */
+                overflow-x: hidden;    /* SUPPRIME L'ASCENSEUR DU BAS */
+                max-height: calc(100vh - 80px); /* Augmente la hauteur totale */
                 padding: 12px;
             }
 
@@ -166,9 +167,7 @@
                 top: 100px;
                 margin-left: 20px;
                 height: calc(100vh - 140px);
-                overflow-y: auto;  /* Autorise le scroll vertical uniquement */
-                overflow-x: hidden; /* Bloque strictement le scroll horizontal */
-            word-wrap: break-word; /* Force le texte trop long à revenir à la ligne */
+                overflow: auto;
                 z-index: 1;
                 align-self: stretch;
             }
@@ -180,30 +179,207 @@
             .right-card .tab-btn { background: transparent; border:1px solid rgba(255,255,255,0.06); padding:6px 10px; border-radius:8px; cursor:pointer; color:var(--text-main); }
             .right-card .tab-btn.active { background: rgba(126,214,165,0.12); border-color: rgba(126,214,165,0.18); }
 
-            /* Sticky only for the top list title, not for each city header */
+            /* 1. Titre de la liste (fixe en haut) */
             .left-panel > h2 {
                 position: sticky;
                 top: 0;
-                margin: 0 0 12px 0;
-                padding: 0 12px;
+                margin: 0;
+                padding: 0 15px;
                 background: var(--card-bg-solid);
                 border-bottom: 1px solid rgba(255,255,255,0.06);
                 z-index: 1300;
                 display: flex;
                 align-items: center;
-                height: 64px;
-                line-height: 1;
+                height: 60px;
                 font-size: 1.05rem;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+                border-radius: 12px 12px 0 0;
             }
 
-            /* City card headers should not stick */
-            .left-panel .city-card h2 {
-                position: static;
-                margin: 10px 0 8px 0;
-                padding: 0;
-                background: transparent;
-                z-index: 1;
+            /* 2. Grille des villes (Accordéons) */
+            .city-grid {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                padding: 10px 0;
+            }
+
+            .city-card {
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.08);
+                border-radius: 12px;
+                overflow: hidden;
+                transition: background 0.3s;
+            }
+
+            /* L'entête de la ville cliquable */
+            .city-card summary {
+                padding: 12px 15px;
+                list-style: none;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                cursor: pointer;
+                user-select: none;
+            }
+
+            .city-card summary::-webkit-details-marker { display: none; }
+
+            .city-card summary h2 {
+                margin: 0 !important;
+                font-size: 1rem;
+                color: var(--text-main);
+                font-weight: 600;
+            }
+
+            /* La petite flèche animée */
+            .city-card summary::after {
+                content: '▶';
+                font-size: 0.7rem;
+                color: var(--accent);
+                transition: transform 0.3s ease;
+            }
+
+            .city-card[open] summary::after {
+                transform: rotate(90deg);
+            }
+
+            .city-card[open] {
+                background: rgba(255,255,255,0.08);
+                border-color: rgba(126, 214, 165, 0.3);
+            }
+
+            /* 3. Conteneur des étudiants à l'intérieur */
+            .student-container {
+                padding: 5px 12px 12px 12px;
+            }
+
+            .student-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 12px;
+                margin-bottom: 6px;
+                border-radius: 10px;
+                background: rgba(255,255,255,0.04);
+                border: 1px solid rgba(255,255,255,0.06);
+                transition: all 0.15s ease;
+            }
+
+            .student-item:hover {
+                background: rgba(126, 214, 165, 0.10);
+                transform: translateX(4px);
+                border-color: var(--accent);
+            }
+
+            .student-item span {
+                color: #e8f5ee;
+                font-size: 0.9rem;
+            }
+
+            /* 4. Actions (Boutons) */
+            .student-actions {
+                display: flex;
+                gap: 8px;
+            }
+
+            .student-item a {
+                border-radius: 8px;
+                padding: 4px 8px;
+                color: #fff;
+                text-decoration: none;
+                font-size: 0.8rem;
+                transition: transform 0.2s;
+            }
+
+            .student-item a.edit { background: #3b82f6; }
+            .student-item a.delete { background: #ff5f6d; }
+            .student-item a:hover { transform: scale(1.1); }
+
+            /* 5. Éléments de droite (Carte et Fiche) */
+            #map {
+                width: calc(100% - 40px); /* On redonne de l'espace sur les côtés */
+                max-width: 100%;
+                height: 560px;
+                border-radius: 20px;
+                border: 1px solid rgba(255,255,255,0.08);
+                margin: 0 auto 24px auto; /* Centre la carte horizontalement */
+                display: block;
+            }
+
+            .alert-info {
+                background: rgba(126, 214, 165, 0.12);
+                border: 1px solid rgba(126, 214, 165, 0.22);
+                color: #dff5e0;
+                border-radius: 16px;
+                padding: 15px 20px;
+                width: calc(100% - 40px); /* Alignement avec la carte */
+                margin: 0 auto 28px auto;
+                box-sizing: border-box;
+            }
+
+            /* 6. Mobile & Tablette - Le mode Responsive */
+            @media (max-width: 980px) {
+                /* On empile les éléments au lieu de les mettre côte à côte */
+                .conteneur {
+                    display: flex;
+                    flex-direction: column;
+                    margin: 0;
+                    padding: 10px;
+                }
+
+                /* Le panneau de gauche se met en haut, plus besoin d'être "fixed" */
+                .left-panel {
+                    position: relative;
+                    width: 100%;
+                    left: 0;
+                    top: 0;
+                    margin-bottom: 20px;
+                    z-index: 10;
+                }
+
+                .left-panel .left-scroll {
+                    max-height: 350px; /* On limite pour ne pas avoir une liste infinie avant la carte */
+                }
+
+                /* La carte et le contenu de droite prennent toute la largeur */
+                .carte {
+                    margin-left: 0;
+                    width: 100%;
+                }
+
+                .layout {
+                    flex-direction: column;
+                }
+
+                #map {
+                    width: 100%; /* La carte prend toute la largeur sur mobile */
+                    height: 400px; /* On réduit un peu la hauteur pour les petits écrans */
+                }
+
+                .alert-info {
+                    width: 100%;
+                }
+
+                /* La fiche étudiante (météo) s'affiche en dessous de la carte */
+                .right-card {
+                    position: relative;
+                    top: 0;
+                    right: 0;
+                    width: 100%;
+                    margin-top: 20px;
+                }
+
+                /* On ajuste la barre d'outils pour qu'elle ne déborde pas */
+                .toolbar {
+                    flex-direction: column;
+                    gap: 15px;
+                    height: auto;
+                    padding: 15px;
+                }
+
+                .toolbar .search-box {
+                    width: 100%;
+                }
             }
 
             .right-panel {
@@ -211,144 +387,24 @@
                 min-width: 0;
             }
 
-            #map {
-                width: calc(100% - 40px);
-                max-width: 100%;
-                height: 560px;
-                border-radius: 20px;
-                border: 1px solid rgba(255,255,255,0.08);
-                margin: 0 auto 24px auto;
-                display: block;
-            }
 
-            .alert-info {
-                background: rgba(126, 214, 165, 0.12);
-                border-color: rgba(126, 214, 165, 0.22);
-                color: #dff5e0;
-                border-radius: 16px;
-                padding: 18px 22px;
-                margin-bottom: 28px;
-            }
-
-            .city-grid {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 22px;
-            }
-
-            .city-card {
-                background: rgba(255,255,255,0.05);
-                border: 1px solid rgba(255,255,255,0.08);
-                border-radius: 20px;
-                padding: 22px;
-            }
-
-            .city-card h2 {
-                margin-top: 0;
-                margin-bottom: 16px;
-                font-size: 1.25rem;
-            }
-
-            .student-item {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 12px 14px;
-                margin-bottom: 12px;
-                border-radius: 14px;
-                background: rgba(255,255,255,0.04);
-                border: 1px solid rgba(255,255,255,0.06);
-                transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-            }
-
-            .student-item span {
-                color: #e8f5ee;
-                font-size: 0.95rem;
-            }
-
-            .student-item:hover {
-                background: rgba(126, 214, 165, 0.10);
-                transform: translateX(6px);
-                box-shadow: 0 8px 20px rgba(0,0,0,0.28);
-                border-color: rgba(126,214,165,0.18);
-            }
-
-            .student-item.selected {
-                background: rgba(126,214,165,0.12);
-                border-color: rgba(126,214,165,0.22);
-                box-shadow: 0 10px 26px rgba(0,0,0,0.32);
-                transform: translateX(6px);
-            }
-
-            .student-item a.edit,
-            .student-item a.delete {
-                transition: transform 0.12s ease, box-shadow 0.12s ease;
-            }
-
-            .student-item a.edit:hover,
-            .student-item a.delete:hover {
-                transform: translateY(-4px) scale(1.06);
-                box-shadow: 0 12px 30px rgba(0,0,0,0.28), 0 3px 8px rgba(0,0,0,0.12) inset;
-                filter: brightness(1.06);
-            }
-
-            .student-actions {
-                display: flex;
-                gap: 10px;
-                align-items: center;
-            }
-
-            .student-item a {
-                border-radius: 12px;
-                padding: 8px 12px;
-                color: #fff;
-                text-decoration: none;
-                font-weight: 700;
-                transition: transform 0.2s ease;
-            }
-
-            .student-item a.delete {
-                background: #ff5f6d;
-            }
-
-            .student-item a.edit {
-                background: #3b82f6;
-            }
-
-            .student-item a:hover {
-                transform: translateY(-1px);
-            }
-
-            @media (max-width: 980px) {
-                .city-grid {
-                    grid-template-columns: 1fr;
-                }
-
-                .toolbar {
-                    flex-direction: column;
-                    align-items: stretch;
-                }
-
-                .toolbar .search-box {
-                    width: 100%;
-                }
-
-                .left-panel { display: none; }
-                .carte { margin-left: 0; }
-                .right-card { position: static; width: 100%; margin-top: 18px; }
-            }
         </style>
     </head>
     <body>
         <div class="conteneur">
             <aside class="left-panel" aria-label="Liste des étudiants">
-                <h2 style="margin-top:0;">Liste des Étudiants par Ville</h2>
+                <h2 style="margin-top:0; padding: 15px; background: var(--card-bg-solid); border-radius: 12px 12px 0 0; font-size: 1.1rem; border-bottom: 1px solid var(--border-color);">
+                    Liste des Étudiants par Ville
+                </h2>
                 <div class="left-scroll">
                     <div class="city-grid">
                         {% for city in grouped_cities %}
-                        <div class="city-card" data-city="{{ city.ville }}">
-                            <h2>{{ city.ville }}</h2>
-                            <div>
+                        <details class="city-card" data-city="{{ city.ville }}">
+                            <summary>
+                                <h2>{{ city.ville }}</h2>
+                                <span class="badge">{{ city.students|length }}</span>
+                            </summary>
+                            <div class="student-container">
                                 {% for student_key, student_data in city.students.items() | sort %}
                                 <div class="student-item" data-student="{{ student_key }}" data-address="{{ student_data.adresse }}" data-etid="{{ student_data.et_id }}">
                                     <span>{{ student_data.info | safe }}</span>
@@ -359,7 +415,7 @@
                                 </div>
                                 {% endfor %}
                             </div>
-                        </div>
+                        </details>
                         {% endfor %}
                     </div>
                 </div>
@@ -453,7 +509,6 @@
                     return;
                 }
 
-                
                 try {
                     // 1. Initialisation de la carte
                     var map = L.map('map').setView([47.50, 6.80], 9);
