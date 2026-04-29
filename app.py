@@ -192,8 +192,12 @@ def login():
         return redirect(url_for('home'))
 
     user = get_user_by_username(username)
-    if not user or not check_password_hash(user['password_hash'], password):
-        flash('Identifiant ou mot de passe invalide')
+    if not user:
+        flash('Identifiant inexistant')
+        return redirect(url_for('home'))
+    
+    if not check_password_hash(user['password_hash'], password):
+        flash('Mot de passe incorrect')
         return redirect(url_for('home'))
 
     # success
@@ -207,8 +211,136 @@ def login():
 @app.route('/logout')
 def logout():
     session.clear()
-    flash('Déconnecté')
+    flash('Déconnecté', 'success')
     return redirect(url_for('home'))
+
+def get_current_user():
+    """Retourne l'utilisateur actuel ou None."""
+    if session.get('user_id'):
+        user = get_user_by_username(session.get('username', ''))
+        return user
+    return None
+
+def admin_required(func):
+    """Décorateur pour vérifier que l'utilisateur est admin."""
+    from functools import wraps
+    @wraps(func)
+    def decorated_function(*args, **kwargs):
+        user = get_current_user()
+        if not user or user['role'] != 'admin':
+            flash('Accès réservé aux administrateurs', 'error')
+            return redirect(url_for('home'))
+        return func(*args, **kwargs)
+    return decorated_function
+
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'GET':
+        return render_template('forgot_password.html')
+
+    username = request.form.get('username')
+    if not username:
+        flash('Identifiant requis', 'error')
+        return redirect(url_for('forgot_password'))
+
+    user = get_user_by_username(username)
+    if not user:
+        flash('Identifiant inexistant', 'error')
+        return redirect(url_for('forgot_password'))
+
+    # Store reset token in session
+    session['password_reset_username'] = username
+    flash('Veuillez entrer votre nouveau mot de passe', 'success')
+    return redirect(url_for('reset_password'))
+
+@app.route('/reset-password', methods=['GET', 'POST'])
+def reset_password():
+    if 'password_reset_username' not in session:
+        flash('Session expirée. Recommencez', 'error')
+        return redirect(url_for('forgot_password'))
+
+    if request.method == 'GET':
+        return render_template('reset_password.html')
+
+    password = request.form.get('password')
+    password_confirm = request.form.get('password_confirm')
+
+    if not password or not password_confirm:
+        flash('Mots de passe requis', 'error')
+        return redirect(url_for('reset_password'))
+
+    if password != password_confirm:
+        flash('Les mots de passe ne correspondent pas', 'error')
+        return redirect(url_for('reset_password'))
+
+    if len(password) < 4:
+        flash('Le mot de passe doit contenir au moins 4 caractères', 'error')
+        return redirect(url_for('reset_password'))
+
+    # Update password
+    username = session['password_reset_username']
+    conn = get_db_connection()
+    password_hash = generate_password_hash(password)
+    conn.execute('UPDATE users SET password_hash = ? WHERE username = ?', (password_hash, username))
+    conn.commit()
+    conn.close()
+
+    session.clear()
+    flash('Mot de passe réinitialisé avec succès. Connectez-vous', 'success')
+    return redirect(url_for('home'))
+
+@app.route('/admin')
+@admin_required
+def admin():
+    """Page tableau de bord admin - liste toutes les tables."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Get list of all tables
+    tables = cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").fetchall()
+    
+    table_info = []
+    for table in tables:
+        table_name = table['name']
+        count = cursor.execute(f"SELECT COUNT(*) as cnt FROM {table_name}").fetchone()['cnt']
+        table_info.append({
+            'name': table_name,
+            'count': count
+        })
+    
+    conn.close()
+    return render_template('admin.html', tables=table_info)
+
+@app.route('/admin/table/<table_name>')
+@admin_required
+def admin_table(table_name):
+    """Page détail pour une table admin."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Validation de sécurité : vérifier que la table existe
+    tables = cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name = ?", (table_name,)).fetchall()
+    if not tables:
+        flash('Table introuvable', 'error')
+        conn.close()
+        return redirect(url_for('admin'))
+    
+    # Get schema
+    schema = cursor.execute(f"PRAGMA table_info({table_name})").fetchall()
+    
+    # Get data (limite à 200 lignes)
+    data = cursor.execute(f"SELECT * FROM {table_name} LIMIT 200").fetchall()
+    
+    conn.close()
+    return render_template('admin_table.html', 
+                         table_name=table_name, 
+                         schema=schema, 
+                         data=data)
+
+@app.context_processor
+def inject_current_user():
+    """Injecte l'utilisateur courant dans tous les templates."""
+    return {'current_user': get_current_user()}
 
 @app.route('/ajouter', methods=['GET', 'POST'])
 def ajouter():

@@ -91,6 +91,18 @@ def main():
                 print('Compte admin déjà présent, non modifié')
         except Exception as e:
             print('Erreur lors de la création admin:', e)
+        
+        # create a default test user (username: testuser, password: test)
+        try:
+            cursor.execute("SELECT id FROM users WHERE username = ?", ('testuser',))
+            if not cursor.fetchone():
+                testuser_pw = generate_password_hash('test')
+                cursor.execute("INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)", ('testuser', testuser_pw, 'user'))
+                print('Compte testuser créé: testuser / test')
+            else:
+                print('Compte testuser déjà présent, non modifié')
+        except Exception as e:
+            print('Erreur lors de la création testuser:', e)
         conn.commit()
         print("\n[OK] Base de données initialisée avec colonnes GPS.")
     except Exception as e:

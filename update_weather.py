@@ -2,12 +2,12 @@ import sqlite3
 import requests
 
 # --- CONFIGURATION ---
-API_KEY = "TA_CLE_API_ICI"
+API_KEY = "0814e8d3aebacae244d30c3b2ee748f0"
 DB_NAME = "climatometre.db"
 
 
 def get_weather(ville):
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={ville}&appid={"0814e8d3aebacae244d30c3b2ee748f0"}&units=metric&lang=fr"
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={ville}&appid={API_KEY}&units=metric&lang=fr"
     print(f"-> Appel API pour {ville}...")
     try:
         r = requests.get(url)

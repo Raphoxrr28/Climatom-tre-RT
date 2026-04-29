@@ -374,7 +374,13 @@
                             <button type="submit">Rechercher</button>
                         </form>
                     </div>
-                    <a href="/ajouter" class="button">+ Ajouter un étudiant</a>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        {% if current_user and current_user.role == 'admin' %}
+                        <a href="/admin" class="button">🔑 Admin</a>
+                        {% endif %}
+                        <a href="/ajouter" class="button">+ Ajouter un étudiant</a>
+                        <a href="/logout" class="button" style="background: rgba(200,100,100,0.6);">Déconnecter</a>
+                    </div>
                 </div>
 
                 <div class="section">
@@ -565,9 +571,9 @@
                                 d.style.margin = '6px 0';
                                 d.style.paddingBottom = '6px';
                                 d.style.borderBottom = '1px solid rgba(255,255,255,0.06)';
-                                d.innerHTML = `<strong>${(r.type||'résidence').toString()}</strong>: ${r.ville || ''}${r.adresse ? ', '+r.adresse : ''}` +
-                                              (r.temp !== null && r.temp !== undefined ? ` — ${r.temp}°C` : '') +
-                                              (r.description ? `<div style="font-size:0.9rem;margin-top:6px;color:var(--text-label);">${r.description}</div>` : '');
+                                d.innerHTML = `<strong>${(r.type||'résidence')}</strong>: ${r.ville || ''}${r.adresse ? ', '+r.adresse : ''}<br>` +
+              `<small style="color:#aaa;">Période : ${r.date_debut || '-'} à ${r.date_fin || '-'}</small>` +
+              (r.temp !== null ? ` — <b>${r.temp}°C</b>` : '');
                                 notesEl.appendChild(d);
                             });
                         } else {
