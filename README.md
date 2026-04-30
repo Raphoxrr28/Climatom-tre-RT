@@ -48,6 +48,18 @@ $$\tilde{x} = \begin{cases} x_{(\frac{n+1}{2})} & \text{si } n \text{ est impair
 Lors de l'ajout d'un étudiant, l'application effectue un **géocodage inverse** via l'API pour récupérer les coordonnées GPS (`lat`, `lon`). Ces coordonnées permettent à Leaflet de positionner précisément les marqueurs sur la carte de la promotion.
 
 ---
+### Bilan de Conformité : Projet Climatomètre R&T
+
+| Exigence du Sujet (Consignes) | Réalisation Technique (Dépôt GitHub / Render) | État de conformité |
+| :--- | :--- | :--- |
+| **Saisie Multimodale** | Importation automatisée via fichiers membres.json et etudiants1.csv. | **Conforme** |
+| **Double Domiciliation** | Gestion des résidences principales et secondaires (icônes distinctes). | **Conforme** |
+| **Climat Médian** | Calcul statistique automatisé via le backend Python (module statistics). | **Conforme** |
+| **Cartographie Interactive** | Visualisation géographique dynamique via la bibliothèque Leaflet.js. | **Conforme** |
+| **Interface de Gestion (CRUD)** | Formulaire d'authentification et persistance des données en session active. | **Conforme** |
+| **Environnement de Travail** | Déploiement en intégration continue via GitHub et l'hébergeur Render. | **Optimisé** |
+| **Algorithmique & Code** | Structure Flask modulaire et feuilles de style optimisées (:root CSS). | **Conforme** |
+| **Documentation & Anglais** | Documentation technique et bilingue en cours de finalisation. | **En cours** |
 
 ## 🚀 Installation et Déploiement
 
